@@ -26,7 +26,7 @@ class JoyreactorStats:
 
         self.post_id_template = re.compile('<a title="ссылка на пост" class="link" href="/post/(\\d*)">ссылка</a>')
         self.page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
-        self.post_title_template = re.compile('<div><h3>([\w\s\d\.\,\-]*)</h3>([\w\s\d\.\,\-]*)</div>')
+        self.post_title_template = re.compile('<div><h3>([^<]*)</h3>([^<]*)</div>')
         self.post_date_template = re.compile('data-time="(\d*)"')
         self.post_comments_template = re.compile("title='количество комментариев'>Комментарии (\d*)</a>")
         self.post_rating_template = re.compile('<span class="post_rating"><span>([\-\d\.]*)<')
@@ -45,10 +45,10 @@ class JoyreactorStats:
         page_count = self.get_page_count()
 
         # TODO: for page in range(1, page_count + 1):
-        page = 1
-        self.print_progress(page, page_count)
-        self.scrap_page(page)
-        sleep(10)
+        for page in range(1, 20):
+            self.print_progress(page, page_count)
+            self.scrap_page(page)
+            sleep(10)
 
         self.save_report()
 
