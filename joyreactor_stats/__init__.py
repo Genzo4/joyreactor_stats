@@ -20,6 +20,7 @@ class JoyreactorStats:
         self.account = account
         self.show_progress = show_progress
         self.quiet = quiet
+        self.page_count = 0
 
     def work(self) -> None:
         self.get_first_page()
@@ -43,6 +44,8 @@ class JoyreactorStats:
 
         self.print_msg(f'Количество страниц со статьями: {page_count}')
 
+        self.page_count = page_count
+
     def scrap_page(self, url: str) -> None:
         pass
 
@@ -63,7 +66,6 @@ class JoyreactorStats:
 
         if not self.quiet and self.show_progress:
             print(f'{msg}')
-
 
     @property
     def account(self) -> str:
@@ -88,3 +90,11 @@ class JoyreactorStats:
     @show_progress.setter
     def show_progress(self, show_progress: bool):
         self.__show_progress = show_progress
+
+    @property
+    def page_count(self) -> int:
+        return self.__page_count
+
+    @page_count.setter
+    def page_count(self, page_count: int):
+        self.__page_count = page_count
