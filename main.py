@@ -1,5 +1,7 @@
 import argparse
 
+from joyreactor_stats import JoyreactorStats
+
 
 version = '1.0.0'
 
@@ -61,6 +63,9 @@ def parse_args():
 def main():
     args = parse_args()
 
+    joy_stats = JoyreactorStats(args.account)
+
+    joy_stats.get_first_page()
 
 if __name__ == '__main__':
     main()
