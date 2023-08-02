@@ -71,5 +71,6 @@ def main():
 
     joy_stats.work()
 
+
 if __name__ == '__main__':
     main()

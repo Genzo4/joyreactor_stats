@@ -20,52 +20,73 @@ class JoyreactorStats:
         self.account = account
         self.show_progress = show_progress
         self.quiet = quiet
-        self.page_count = 0
 
     def work(self) -> None:
-        self.get_first_page()
+        page_count = self.get_page_count()
 
-    def get_first_page(self) -> None:
+        for page in range(1, page_count + 1):
+            self.print_progress(page, page_count)
+            self.scrap_page(page)
+
+    def get_page_count(self) -> int:
         first_url = f'https://joyreactor.cc/user/{self.account}'
 
-        self.print_msg(f'Get {first_url}')
+        html = self.get_site_html(first_url)
 
-        try:
-            response = request.urlopen(first_url)
-        except error.HTTPError as e:
-            self.print_msg('... страница недоступна')
-            exit(1)
+        page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
+        page_count_list = page_count_template.findall(html)
+        if len(page_count_list) == 0:
+            self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
+            exit(2)
 
-        html = response.read().decode(response.headers.get_content_charset())
-        page_count = self.get_page_count(html)
+        page_count = int(page_count_list[0])
+
         if page_count == 0:
             self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
             exit(2)
 
         self.print_msg(f'Количество страниц со статьями: {page_count}')
 
-        self.page_count = page_count
+        return page_count
 
-    def scrap_page(self, url: str) -> None:
+    def scrap_page(self, page: int) -> None:
         pass
 
-    def get_page_count(self, html: str) -> int:
-        page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
-        page_count_list = page_count_template.findall(html)
-        if len(page_count_list) == 0:
-            return 0
+    def scrap_post(self):
+        pass
 
-        return page_count_list[0]
+    def get_site_html(self, url: str) -> str:
+        self.print_msg(f'Get {url}')
+
+        try:
+            response = request.urlopen(url)
+        except error.HTTPError as e:
+            self.print_msg('... страница недоступна')
+            exit(1)
+
+        html = response.read().decode(response.headers.get_content_charset())
+
+        return html
 
     def print_msg(self, msg: str) -> None:
         """
-        Print progress
+        Print message
         :param msg:
         :return: None
         """
 
         if not self.quiet and self.show_progress:
             print(f'{msg}')
+
+    def print_progress(self, cur_page: int, page_count: int) -> None:
+        """
+        Print progress
+        :param cur_page:
+        :param page_count:
+        :return: None
+        """
+
+        self.print_msg(f'[{cur_page}/{page_count}]')
 
     @property
     def account(self) -> str:
@@ -90,11 +111,3 @@ class JoyreactorStats:
     @show_progress.setter
     def show_progress(self, show_progress: bool):
         self.__show_progress = show_progress
-
-    @property
-    def page_count(self) -> int:
-        return self.__page_count
-
-    @page_count.setter
-    def page_count(self, page_count: int):
-        self.__page_count = page_count
