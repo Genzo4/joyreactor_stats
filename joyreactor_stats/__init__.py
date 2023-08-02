@@ -24,13 +24,16 @@ class JoyreactorStats:
         self.post_id_template = re.compile('<a title="ссылка на пост" class="link" href="/post/(\\d*)">ссылка</a>')
         self.page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
         self.post_title_template = re.compile('<div class="post_content"><div><h3>([\w\s\d\.\,\-]*)</h3>([[\w\s\d\.\,\-]*]*)</div>')
+        self.post_date_template = re.compile('data-time="(\d*)"')
+        self.post_comments_template = re.compile("title='количество комментариев'>Комментарии (\d*)</a>")
+        self.post_rating_template = re.compile('<span class="post_rating"><span>([\-\d\.]*)<')
 
         self.post_id = list()
         self.post_title = list()
         self.post_text = list()
         self.post_date = list()
         self.post_comments = list()
-        self.post_likes = list()
+        self.post_rating = list()
         self.post_url = list()
 
     def work(self) -> None:
@@ -86,13 +89,34 @@ class JoyreactorStats:
 
         post_title_list = self.post_title_template.findall(html)
         if len(post_title_list) == 0:
-            self.print_msg('\t... не удалось получить данные со страницы')
+            self.print_msg('\t... не удалось получить заголовок со страницы')
             return
 
         self.post_title.append(post_title_list[0][0])
         self.post_text.append(post_title_list[0][1])
 
         self.print_msg(post_title_list[0][0])
+
+        post_date_list = self.post_date_template.findall(html)
+        if len(post_date_list) == 0:
+            self.print_msg('\t... не удалось получить дату со страницы')
+            return
+
+        self.post_date.append(int(post_date_list[0]))
+
+        post_comments_list = self.post_date_template.findall(html)
+        if len(post_comments_list) == 0:
+            self.print_msg('\t... не удалось получить количество комментариев со страницы')
+            return
+
+        self.post_comments.append(int(post_comments_list[0]))
+
+        post_rating_list = self.post_rating_template.findall(html)
+        if len(post_rating_list) == 0:
+            self.print_msg('\t... не удалось получить рейтинг со страницы')
+            return
+
+        self.post_rating.append(float(post_rating_list[0]))
 
     def get_site_html(self, url: str) -> str:
         self.print_msg(f'\t\tGet {url}')
