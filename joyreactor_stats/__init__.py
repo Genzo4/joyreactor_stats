@@ -24,9 +24,11 @@ class JoyreactorStats:
     def work(self) -> None:
         page_count = self.get_page_count()
 
-        for page in range(1, page_count + 1):
-            self.print_progress(page, page_count)
-            self.scrap_page(page)
+        # TODO: for page in range(1, page_count + 1):
+        page = 1
+        self.print_progress(page, page_count)
+        self.scrap_page(page)
+        sleep(10)
 
     def get_page_count(self) -> int:
         first_url = f'https://joyreactor.cc/user/{self.account}'
@@ -50,13 +52,26 @@ class JoyreactorStats:
         return page_count
 
     def scrap_page(self, page: int) -> None:
-        pass
+        page_url = f'https://joyreactor.cc/user/{self.account}/{page}'
+        html = self.get_site_html(page_url)
 
-    def scrap_post(self):
-        pass
+        post_id_template = re.compile(f"<a title=\"ссылка на пост\" class=\"link\" href=\"/post/(\\d*)\">ссылка</a>")
+
+        post_id_list = post_id_template.findall(html)
+        if len(post_id_list) == 0:
+            self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
+            exit(2)
+
+        for post_id in post_id_list:
+            self.scrap_post(post_id)
+            sleep(10)
+
+    def scrap_post(self, post_id: int) -> None:
+        post_url = f'https://joyreactor.cc/post/{post_id}'
+        html = self.get_site_html(post_url)
 
     def get_site_html(self, url: str) -> str:
-        self.print_msg(f'Get {url}')
+        self.print_msg(f'\t\tGet {url}')
 
         try:
             response = request.urlopen(url)
