@@ -1,6 +1,9 @@
 from urllib import request, error
 from time import sleep
 import re
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, Border, Side
+from datetime import datetime
 
 
 class JoyreactorStats:
@@ -23,7 +26,7 @@ class JoyreactorStats:
 
         self.post_id_template = re.compile('<a title="ссылка на пост" class="link" href="/post/(\\d*)">ссылка</a>')
         self.page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
-        self.post_title_template = re.compile('<div class="post_content"><div><h3>([\w\s\d\.\,\-]*)</h3>([[\w\s\d\.\,\-]*]*)</div>')
+        self.post_title_template = re.compile('<div><h3>([\w\s\d\.\,\-]*)</h3>([\w\s\d\.\,\-]*)</div>')
         self.post_date_template = re.compile('data-time="(\d*)"')
         self.post_comments_template = re.compile("title='количество комментариев'>Комментарии (\d*)</a>")
         self.post_rating_template = re.compile('<span class="post_rating"><span>([\-\d\.]*)<')
@@ -36,6 +39,8 @@ class JoyreactorStats:
         self.post_rating = list()
         self.post_url = list()
 
+        self.header = ['id', 'Заголовок', 'Текстовое описание', 'Дата', 'Комментариев', 'Рейтинг', 'Ссылка']
+
     def work(self) -> None:
         page_count = self.get_page_count()
 
@@ -44,6 +49,69 @@ class JoyreactorStats:
         self.print_progress(page, page_count)
         self.scrap_page(page)
         sleep(10)
+
+        self.save_report()
+
+    def save_report(self) -> None:
+        """
+        Save report to xlx
+        :return:
+        """
+
+        work_book = Workbook()
+
+        work_sheet = work_book.active
+
+        work_sheet.append(self.header)
+
+        self._insert_column_data(work_sheet, 'A', self.post_id)
+        self._insert_column_data(work_sheet, 'B', self.post_title)
+        self._insert_column_data(work_sheet, 'C', self.post_text)
+        self._insert_column_data(work_sheet, 'D', self.post_date)
+        self._insert_column_data(work_sheet, 'E', self.post_comments)
+        self._insert_column_data(work_sheet, 'F', self.post_rating)
+        last_row = self._insert_column_data(work_sheet, 'G', self.post_url)
+
+        # Оформление
+        header_font = Font(bold=True)
+        header_align = Alignment(horizontal='center')
+
+        for row in work_sheet['A1:G1']:
+            for cell in row:
+                cell.font = header_font
+                cell.alignment = header_align
+
+        for row in work_sheet['F2:F' + str(last_row)]:
+            for cell in row:
+                cell.number_format = "0.00"
+
+        for row in work_sheet['G2:G' + str(last_row)]:
+            for cell in row:
+                cell.hyperlink = cell.value
+                cell.style = "Hyperlink"
+
+        date_align = Alignment(horizontal='center')
+        for row in work_sheet['D2:D' + str(last_row)]:
+            for cell in row:
+                cell.alignment = date_align
+
+        border = Side(style='thin', color="000000")
+        table_border = Border(top=border, left=border, right=border, bottom=border)
+
+        for row in work_sheet['A1:G' + str(last_row)]:
+            for cell in row:
+                cell.border = table_border
+
+        work_sheet.column_dimensions['A'].width = 10
+        work_sheet.column_dimensions['B'].width = 30
+        work_sheet.column_dimensions['C'].width = 43
+        work_sheet.column_dimensions['D'].width = 18
+        work_sheet.column_dimensions['E'].width = 15
+        work_sheet.column_dimensions['F'].width = 9
+        work_sheet.column_dimensions['G'].width = 35
+
+        xlsx_file = 'm:\\temp\\out.xlsx'
+        work_book.save(xlsx_file)
 
     def get_page_count(self) -> int:
         first_url = f'https://joyreactor.cc/user/{self.account}'
@@ -76,7 +144,7 @@ class JoyreactorStats:
 
         for post_id in post_id_list:
             self.scrap_post(post_id)
-            sleep(10)
+            sleep(5)
 
     def scrap_post(self, post_id: int) -> None:
         self.post_id.append(post_id)
@@ -102,9 +170,9 @@ class JoyreactorStats:
             self.print_msg('\t... не удалось получить дату со страницы')
             return
 
-        self.post_date.append(int(post_date_list[0]))
+        self.post_date.append(datetime.utcfromtimestamp(int(post_date_list[0])).strftime('%d.%m.%Y %H:%M'))
 
-        post_comments_list = self.post_date_template.findall(html)
+        post_comments_list = self.post_comments_template.findall(html)
         if len(post_comments_list) == 0:
             self.print_msg('\t... не удалось получить количество комментариев со страницы')
             return
@@ -150,6 +218,15 @@ class JoyreactorStats:
         """
 
         self.print_msg(f'[{cur_page}/{page_count}]')
+
+    @staticmethod
+    def _insert_column_data(work_sheet, column: str, data, start_row: int = 2) -> int:
+        kolvo = start_row
+        for el in data:
+            work_sheet[column + str(kolvo)] = el
+            kolvo += 1
+
+        return kolvo - 1
 
     @property
     def account(self) -> str:
