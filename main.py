@@ -63,9 +63,13 @@ def parse_args():
 def main():
     args = parse_args()
 
-    joy_stats = JoyreactorStats(args.account)
+    joy_stats = JoyreactorStats(
+        args.account,
+        show_progress=not args.no_progress,
+        quiet=args.quiet
+        )
 
-    joy_stats.get_first_page()
+    joy_stats.work()
 
 if __name__ == '__main__':
     main()
