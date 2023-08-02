@@ -21,6 +21,18 @@ class JoyreactorStats:
         self.show_progress = show_progress
         self.quiet = quiet
 
+        self.post_id_template = re.compile('<a title="ссылка на пост" class="link" href="/post/(\\d*)">ссылка</a>')
+        self.page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
+        self.post_title_template = re.compile('<div class="post_content"><div><h3>([\w\s\d\.\,\-]*)</h3>([[\w\s\d\.\,\-]*]*)</div>')
+
+        self.post_id = list()
+        self.post_title = list()
+        self.post_text = list()
+        self.post_date = list()
+        self.post_comments = list()
+        self.post_likes = list()
+        self.post_url = list()
+
     def work(self) -> None:
         page_count = self.get_page_count()
 
@@ -35,8 +47,7 @@ class JoyreactorStats:
 
         html = self.get_site_html(first_url)
 
-        page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
-        page_count_list = page_count_template.findall(html)
+        page_count_list = self.page_count_template.findall(html)
         if len(page_count_list) == 0:
             self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
             exit(2)
@@ -55,9 +66,7 @@ class JoyreactorStats:
         page_url = f'https://joyreactor.cc/user/{self.account}/{page}'
         html = self.get_site_html(page_url)
 
-        post_id_template = re.compile(f"<a title=\"ссылка на пост\" class=\"link\" href=\"/post/(\\d*)\">ссылка</a>")
-
-        post_id_list = post_id_template.findall(html)
+        post_id_list = self.post_id_template.findall(html)
         if len(post_id_list) == 0:
             self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
             exit(2)
@@ -67,8 +76,23 @@ class JoyreactorStats:
             sleep(10)
 
     def scrap_post(self, post_id: int) -> None:
+        self.post_id.append(post_id)
+
         post_url = f'https://joyreactor.cc/post/{post_id}'
+
+        self.post_url.append(post_url)
+
         html = self.get_site_html(post_url)
+
+        post_title_list = self.post_title_template.findall(html)
+        if len(post_title_list) == 0:
+            self.print_msg('\t... не удалось получить данные со страницы')
+            return
+
+        self.post_title.append(post_title_list[0][0])
+        self.post_text.append(post_title_list[0][1])
+
+        self.print_msg(post_title_list[0][0])
 
     def get_site_html(self, url: str) -> str:
         self.print_msg(f'\t\tGet {url}')
