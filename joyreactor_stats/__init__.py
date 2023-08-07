@@ -4,7 +4,8 @@ from time import sleep
 import re
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
-from datetime import datetime
+from datetime import datetime, timedelta
+import os
 
 
 class JoyreactorStats:
@@ -27,7 +28,6 @@ class JoyreactorStats:
 
         self.post_id_template = re.compile('<a title="ссылка на пост" class="link" href="/post/(\\d*)">ссылка</a>')
         self.page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
-        #!self.post_title_template = re.compile('<div><h3>([^<]*)</h3>([^<]*)</div>')
         self.post_title_template = re.compile('<div><h3>([^<]*)</h3>((?:(?!</div>).)*)</div>')
         self.post_date_template = re.compile('data-time="(\d*)"')
         self.post_comments_template = re.compile("title='количество комментариев'>Комментарии (\d*)</a>")
@@ -43,22 +43,49 @@ class JoyreactorStats:
 
         self.header = ['id', 'Заголовок', 'Текстовое описание', 'Дата', 'Комментариев', 'Рейтинг', 'Ссылка']
 
+        # Рабочая папка программы
+        self.WORK_FOLDER = os.path.dirname(os.path.abspath(__file__))
+
     def work(self) -> None:
+
+        self.print_msg("--------------------")
+        start_date = datetime.now()
+
+        self.print_msg(f'Начало: {start_date.strftime("%d.%m.%Y %H:%M")}')
+
         page_count = self.get_page_count()
 
         # TODO: for page in range(1, page_count + 1):
-        for page in range(1, 4):
+        #for page in range(1, page_count + 1):
+        for page in range(1, 2):
             self.print_progress(page, page_count)
             self.scrap_page(page)
             sleep(10)
 
         self.print_msg("Сохраняем отчёт в excel ...")
-        self.save_report()
+        save_date = datetime.now()
+
+        xls_file = os.path.join(self.WORK_FOLDER, f'joyreactor_{self.account}_{save_date.strftime("%d.%m.%Y")}.xlsx')
+
+        self.save_report(xls_file)
+
         self.print_msg("Отчёт сохранён")
 
-    def save_report(self) -> None:
+        end_date = datetime.now()
+
+        self.print_msg(f'Окончание: {end_date.strftime("%d.%m.%Y %H:%M")}')
+
+        len_date = end_date - start_date
+
+        self.print_msg(f'Продолжительность: {self._get_len_date_str(len_date)}')
+
+        self.print_msg("--------------------")
+
+    def save_report(self, xls_file: str) -> None:
         """
         Save report to xlx
+        :param xls_file:
+        :type xls_file: str
         :return:
         """
 
@@ -114,8 +141,7 @@ class JoyreactorStats:
         work_sheet.column_dimensions['F'].width = 9
         work_sheet.column_dimensions['G'].width = 35
 
-        xlsx_file = 'm:\\temp\\out.xlsx'
-        work_book.save(xlsx_file)
+        work_book.save(xls_file)
 
     def get_page_count(self) -> int:
         first_url = f'https://joyreactor.cc/user/{self.account}'
@@ -168,14 +194,16 @@ class JoyreactorStats:
             self.post_title.append(post_title_list[0][0])
             self.post_text.append(post_title_list[0][1])
 
-            self.print_msg(f'\t{post_title_list[0][0]}')
-
         post_date_list = self.post_date_template.findall(html)
         if len(post_date_list) == 0:
             self.print_msg('\t... не удалось получить дату со страницы')
-            return
+            post_date = 'НЕ УДАЛОСЬ ПОЛУЧИТЬ'
+        else:
+            post_date = datetime.utcfromtimestamp(int(post_date_list[0])).strftime('%d.%m.%Y %H:%M')
 
-        self.post_date.append(datetime.utcfromtimestamp(int(post_date_list[0])).strftime('%d.%m.%Y %H:%M'))
+        self.post_date.append(post_date)
+
+        self.print_msg(f'\t{post_date} {post_title_list[0][0]}')
 
         post_comments_list = self.post_comments_template.findall(html)
         if len(post_comments_list) == 0:
@@ -232,6 +260,24 @@ class JoyreactorStats:
             kolvo += 1
 
         return kolvo - 1
+
+    @staticmethod
+    def _get_len_date_str(len_date: timedelta) -> str:
+        seconds = len_date.total_seconds()
+        hours = int(seconds / 3600)
+        mins = int((seconds - hours * 3600) / 60)
+        secs = seconds - hours * 3600 - mins * 60
+
+        result = ''
+
+        if hours > 0:
+            result = f'{hours} ч.'
+        if mins > 0:
+            result = f'{result} {mins} м.'
+        if secs > 0:
+            result = f'{result} {secs} сек.'
+
+        return result
 
     @property
     def account(self) -> str:
