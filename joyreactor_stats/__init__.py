@@ -49,9 +49,6 @@ class JoyreactorStats:
 
         self.header = ['id', 'Заголовок', 'Текстовое описание', 'Дата', 'Комментариев', 'Рейтинг', 'Ссылка']
 
-        # Рабочая папка программы
-        self.WORK_FOLDER = os.path.dirname(os.path.abspath(__file__))
-
     def work(self) -> None:
         """
         Run main work
@@ -70,10 +67,10 @@ class JoyreactorStats:
             self.scrap_page(page)
             sleep(10)
 
-        self.print_msg("Сохраняем отчёт в excel ...")
         save_date = datetime.now()
+        xls_file = f'joyreactor_{self.account}_{save_date.strftime("%d.%m.%Y_%H-%M")}.xlsx'
 
-        xls_file = os.path.join(self.WORK_FOLDER, f'joyreactor_{self.account}_{save_date.strftime("%d.%m.%Y_%H:%M")}.xlsx')
+        self.print_msg(f'Сохраняем отчёт в excel ({xls_file}) ...')
 
         self.save_report(xls_file)
 
