@@ -65,7 +65,6 @@ class JoyreactorStats:
         for page in range(1, page_count + 1):
             self.print_progress(page, page_count)
             self.scrap_page(page)
-            sleep(10)
 
         save_date = datetime.now()
         xls_file = f'joyreactor_{self.account}_{save_date.strftime("%d.%m.%Y_%H-%M")}.xlsx'
