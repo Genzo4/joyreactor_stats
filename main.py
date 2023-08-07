@@ -66,6 +66,7 @@ def main():
     joy_stats = JoyreactorStats(
         args.account,
         show_progress=not args.no_progress,
+        open_xls=not args.dont_open,
         quiet=args.quiet
         )
 

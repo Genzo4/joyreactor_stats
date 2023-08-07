@@ -13,17 +13,20 @@ class JoyreactorStats:
     def __init__(self,
                  account: str,
                  show_progress: bool = True,
+                 open_xls: bool = True,
                  quiet: bool = False
                  ):
         """
         Init class
         :param account:
         :param show_progress:
+        :param open_xls:
         :param quiet:
         """
 
         self.account = account
         self.show_progress = show_progress
+        self.open_xls = open_xls
         self.quiet = quiet
 
         self.post_id_template = re.compile('<a title="ссылка на пост" class="link" href="/post/(\\d*)">ссылка</a>')
@@ -56,7 +59,6 @@ class JoyreactorStats:
         page_count = self.get_page_count()
 
         # TODO: for page in range(1, page_count + 1):
-        #for page in range(1, page_count + 1):
         for page in range(1, 2):
             self.print_progress(page, page_count)
             self.scrap_page(page)
@@ -80,6 +82,9 @@ class JoyreactorStats:
         self.print_msg(f'Продолжительность: {self._get_len_date_str(len_date)}')
 
         self.print_msg("--------------------")
+
+        if self.open_xls:
+            os.startfile(xls_file)
 
     def save_report(self, xls_file: str) -> None:
         """
@@ -266,7 +271,7 @@ class JoyreactorStats:
         seconds = len_date.total_seconds()
         hours = int(seconds / 3600)
         mins = int((seconds - hours * 3600) / 60)
-        secs = seconds - hours * 3600 - mins * 60
+        secs = int(seconds - hours * 3600 - mins * 60)
 
         result = ''
 
@@ -302,3 +307,11 @@ class JoyreactorStats:
     @show_progress.setter
     def show_progress(self, show_progress: bool):
         self.__show_progress = show_progress
+
+    @property
+    def open_xls(self) -> bool:
+        return self.__open_xls
+
+    @open_xls.setter
+    def open_xls(self, open_xls: bool):
+        self.__open_xls = open_xls
