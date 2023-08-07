@@ -1,4 +1,5 @@
 from urllib import request, error
+from urllib import request, error
 from time import sleep
 import re
 from openpyxl import Workbook
@@ -26,7 +27,8 @@ class JoyreactorStats:
 
         self.post_id_template = re.compile('<a title="ссылка на пост" class="link" href="/post/(\\d*)">ссылка</a>')
         self.page_count_template = re.compile(f"<a href='/user/{self.account}/(\\d*)'")
-        self.post_title_template = re.compile('<div><h3>([^<]*)</h3>([^<]*)</div>')
+        #!self.post_title_template = re.compile('<div><h3>([^<]*)</h3>([^<]*)</div>')
+        self.post_title_template = re.compile('<div><h3>([^<]*)</h3>((?:(?!</div>).)*)</div>')
         self.post_date_template = re.compile('data-time="(\d*)"')
         self.post_comments_template = re.compile("title='количество комментариев'>Комментарии (\d*)</a>")
         self.post_rating_template = re.compile('<span class="post_rating"><span>([\-\d\.]*)<')
@@ -45,12 +47,14 @@ class JoyreactorStats:
         page_count = self.get_page_count()
 
         # TODO: for page in range(1, page_count + 1):
-        for page in range(1, 20):
+        for page in range(1, 4):
             self.print_progress(page, page_count)
             self.scrap_page(page)
             sleep(10)
 
+        self.print_msg("Сохраняем отчёт в excel ...")
         self.save_report()
+        self.print_msg("Отчёт сохранён")
 
     def save_report(self) -> None:
         """
@@ -158,12 +162,13 @@ class JoyreactorStats:
         post_title_list = self.post_title_template.findall(html)
         if len(post_title_list) == 0:
             self.print_msg('\t... не удалось получить заголовок со страницы')
-            return
+            self.post_title.append('НЕ УДАЛОСЬ ПОЛУЧИТЬ')
+            self.post_text.append('НЕ УДАЛОСЬ ПОЛУЧИТЬ')
+        else:
+            self.post_title.append(post_title_list[0][0])
+            self.post_text.append(post_title_list[0][1])
 
-        self.post_title.append(post_title_list[0][0])
-        self.post_text.append(post_title_list[0][1])
-
-        self.print_msg(post_title_list[0][0])
+            self.print_msg(f'\t{post_title_list[0][0]}')
 
         post_date_list = self.post_date_template.findall(html)
         if len(post_date_list) == 0:
@@ -175,16 +180,16 @@ class JoyreactorStats:
         post_comments_list = self.post_comments_template.findall(html)
         if len(post_comments_list) == 0:
             self.print_msg('\t... не удалось получить количество комментариев со страницы')
-            return
-
-        self.post_comments.append(int(post_comments_list[0]))
+            self.post_comments.append('НЕ УДАЛОСЬ ПОЛУЧИТЬ')
+        else:
+            self.post_comments.append(int(post_comments_list[0]))
 
         post_rating_list = self.post_rating_template.findall(html)
         if len(post_rating_list) == 0:
             self.print_msg('\t... не удалось получить рейтинг со страницы')
-            return
-
-        self.post_rating.append(float(post_rating_list[0]))
+            self.post_rating.append('НЕ УДАЛОСЬ ПОЛУЧИТЬ')
+        else:
+            self.post_rating.append(float(post_rating_list[0]))
 
     def get_site_html(self, url: str) -> str:
         self.print_msg(f'\t\tGet {url}')
