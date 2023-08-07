@@ -18,9 +18,13 @@ class JoyreactorStats:
         """
         Init class
         :param account:
+        :type: str
         :param show_progress:
+        :type: bool
         :param open_xls:
+        :type: bool
         :param quiet:
+        :type: bool
         """
 
         self.account = account
@@ -49,6 +53,10 @@ class JoyreactorStats:
         self.WORK_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
     def work(self) -> None:
+        """
+        Run main work
+        :return: None
+        """
 
         self.print_msg("--------------------")
         start_date = datetime.now()
@@ -86,10 +94,10 @@ class JoyreactorStats:
 
     def save_report(self, xls_file: str) -> None:
         """
-        Save report to xlx
+        Save report to xls
         :param xls_file:
         :type xls_file: str
-        :return:
+        :return: None
         """
 
         work_book = Workbook()
@@ -147,6 +155,11 @@ class JoyreactorStats:
         work_book.save(xls_file)
 
     def get_page_count(self) -> int:
+        """
+        Получить количество страниц с постами на аккаунте
+        :return: int
+        """
+
         first_url = f'https://joyreactor.cc/user/{self.account}'
 
         html = self.get_site_html(first_url)
@@ -167,6 +180,13 @@ class JoyreactorStats:
         return page_count
 
     def scrap_page(self, page: int) -> None:
+        """
+        Собрать список постов со страницы
+        :param page: номер страницы
+        :type: int
+        :return:
+        """
+
         page_url = f'https://joyreactor.cc/user/{self.account}/{page}'
         html = self.get_site_html(page_url)
 
@@ -181,6 +201,12 @@ class JoyreactorStats:
                 sleep(5)
 
     def scrap_post(self, post_id: int) -> None:
+        """
+        Собрать данные со страницы с постом
+        :param post_id: id поста
+        :return:
+        """
+
         self.post_id.append(post_id)
 
         post_url = f'https://joyreactor.cc/post/{post_id}'
@@ -228,6 +254,13 @@ class JoyreactorStats:
             self.post_rating.append(float(post_rating_list[0]))
 
     def get_site_html(self, url: str) -> str:
+        """
+        Получить содержимое страницы в текстовом виде
+        :param url: URL страницы
+        :type: str
+        :return: str
+        """
+
         self.print_msg(f'\t\tGet {url}')
 
         try:
@@ -244,6 +277,7 @@ class JoyreactorStats:
         """
         Print message
         :param msg:
+        :type: str
         :return: None
         """
 
@@ -262,6 +296,14 @@ class JoyreactorStats:
 
     @staticmethod
     def _insert_column_data(work_sheet, column: str, data, start_row: int = 2) -> int:
+        """
+        Вставить в excel файл данные одного столбца.
+        :param work_sheet:
+        :param column:
+        :param data:
+        :param start_row:
+        :return: Последняя вставленная строка
+        """
         kolvo = start_row
         for el in data:
             work_sheet[column + str(kolvo)] = el
@@ -271,6 +313,12 @@ class JoyreactorStats:
 
     @staticmethod
     def _get_len_date_str(len_date: timedelta) -> str:
+        """
+        Получить продолжительность работы в текстовом виде
+        :param len_date:
+        :return:
+        """
+
         seconds = len_date.total_seconds()
         hours = int(seconds / 3600)
         mins = int((seconds - hours * 3600) / 60)
