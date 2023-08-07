@@ -1,5 +1,4 @@
 from urllib import request, error
-from urllib import request, error
 from time import sleep
 import re
 from openpyxl import Workbook
@@ -58,8 +57,7 @@ class JoyreactorStats:
 
         page_count = self.get_page_count()
 
-        # TODO: for page in range(1, page_count + 1):
-        for page in range(1, 2):
+        for page in range(1, page_count + 1):
             self.print_progress(page, page_count)
             self.scrap_page(page)
             sleep(10)
@@ -67,7 +65,7 @@ class JoyreactorStats:
         self.print_msg("Сохраняем отчёт в excel ...")
         save_date = datetime.now()
 
-        xls_file = os.path.join(self.WORK_FOLDER, f'joyreactor_{self.account}_{save_date.strftime("%d.%m.%Y")}.xlsx')
+        xls_file = os.path.join(self.WORK_FOLDER, f'joyreactor_{self.account}_{save_date.strftime("%d.%m.%Y %H:%M")}.xlsx')
 
         self.save_report(xls_file)
 
@@ -158,7 +156,7 @@ class JoyreactorStats:
             self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
             exit(2)
 
-        page_count = int(page_count_list[0])
+        page_count = int(page_count_list[0]) + 1
 
         if page_count == 0:
             self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
@@ -177,9 +175,10 @@ class JoyreactorStats:
             self.print_msg('\t... что-то пошло не так. Похоже неверный аккаунт.')
             exit(2)
 
-        for post_id in post_id_list:
-            self.scrap_post(post_id)
-            sleep(5)
+        for post_id in reversed(post_id_list):
+            if post_id not in self.post_id:
+                self.scrap_post(post_id)
+                sleep(5)
 
     def scrap_post(self, post_id: int) -> None:
         self.post_id.append(post_id)
@@ -195,9 +194,13 @@ class JoyreactorStats:
             self.print_msg('\t... не удалось получить заголовок со страницы')
             self.post_title.append('НЕ УДАЛОСЬ ПОЛУЧИТЬ')
             self.post_text.append('НЕ УДАЛОСЬ ПОЛУЧИТЬ')
+
+            post_title = 'НЕ УДАЛОСЬ ПОЛУЧИТЬ'
         else:
             self.post_title.append(post_title_list[0][0])
             self.post_text.append(post_title_list[0][1])
+
+            post_title = post_title_list[0][0]
 
         post_date_list = self.post_date_template.findall(html)
         if len(post_date_list) == 0:
@@ -208,7 +211,7 @@ class JoyreactorStats:
 
         self.post_date.append(post_date)
 
-        self.print_msg(f'\t{post_date} {post_title_list[0][0]}')
+        self.print_msg(f'\t{post_date} {post_title}')
 
         post_comments_list = self.post_comments_template.findall(html)
         if len(post_comments_list) == 0:
