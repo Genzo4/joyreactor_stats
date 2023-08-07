@@ -71,7 +71,7 @@ joy_stats.work()
 - ### Билд под Windows
 ```cmd
 pip install -r requirements_build.txt
-pyinstaller -F -n joyreactor_stats -i favicon.png main.py --version-file version.txt
+pyinstaller -F -n joyreactor_stats -i favicon.ico main.py --version-file version.txt
 ```
 
 Готовый исполняемый файл появляется в папке dist. 
