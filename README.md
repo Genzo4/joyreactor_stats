@@ -50,7 +50,7 @@ from joyreactor_stats import JoyreactorStats
   Значение по умолчанию: False
 
 ```python
-joy_stats = JoyreactorStats(AccountName)
+joy_stats = JoyreactorStats('AccountName')
 ```
 
 - ### Запускаем получение отчёта
