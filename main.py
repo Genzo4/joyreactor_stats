@@ -9,7 +9,7 @@ version = '1.0.0'
 def parse_args():
     parser = argparse.ArgumentParser(
         prog='joyreactor_stats',
-        description='Get Joyreactor stats v.%s' % version + ' (c) 2023 Genzo',
+        description='Get Joyreactor stats v.%s' % version + ' (c) 2023 Genzo (https://github.com/Genzo4/joyreactor_stats)',
         add_help=False
         )
 
@@ -20,14 +20,21 @@ def parse_args():
     )
 
     parser.add_argument(
+        '-pi',
+        '--post_id',
         dest='post_id',
-        type=str,
+        type=int,
+        default=0,
         help='id отслеживаемого поста'
     )
 
     parser.add_argument(
+        '-d',
+        '--delay',
         dest='delay',
-        type=str,
+        type=int,
+        default=10,
+        choices=range(10, 1441, 10),
         help='Задержка проверки поста (в мин.)'
     )
 
@@ -82,7 +89,10 @@ def main():
         quiet=args.quiet
         )
 
-    joy_stats.work()
+    if args.post_id == 0:
+        joy_stats.work()
+    else:
+        pass
 
 
 if __name__ == '__main__':
