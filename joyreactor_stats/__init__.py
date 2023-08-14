@@ -233,8 +233,6 @@ class JoyreactorStats:
 
         self.post_date.append(post_date)
 
-        self.print_msg(f'\t{post_date} {post_title}')
-
         post_comments_list = self.post_comments_template.findall(html)
         if len(post_comments_list) == 0:
             self.print_msg('\t... не удалось получить количество комментариев со страницы')
@@ -246,8 +244,12 @@ class JoyreactorStats:
         if len(post_rating_list) == 0:
             self.print_msg('\t... не удалось получить рейтинг со страницы')
             self.post_rating.append('НЕ УДАЛОСЬ ПОЛУЧИТЬ')
+            post_rating = 0.0
         else:
-            self.post_rating.append(float(post_rating_list[0]))
+            post_rating = float(post_rating_list[0])
+            self.post_rating.append(post_rating)
+
+        self.print_msg(f'\t{post_date} {post_title} [{post_rating}]')
 
     def get_site_html(self, url: str) -> str:
         """
