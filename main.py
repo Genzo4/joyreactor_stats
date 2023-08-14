@@ -20,6 +20,18 @@ def parse_args():
     )
 
     parser.add_argument(
+        dest='post_id',
+        type=str,
+        help='id отслеживаемого поста'
+    )
+
+    parser.add_argument(
+        dest='delay',
+        type=str,
+        help='Задержка проверки поста (в мин.)'
+    )
+
+    parser.add_argument(
         '-no',
         '--dont_open',
         action='store_true',
