@@ -1,6 +1,4 @@
 import argparse
-import time
-from datetime import datetime
 
 from joyreactor_stats import JoyreactorStats
 
@@ -94,12 +92,7 @@ def main():
     if args.post_id == 0:
         joy_stats.work()
     else:
-        joy_stats.print_msg('Для остановки нажмите Ctrl+С')
-        while True:
-            date = datetime.now()
-            joy_stats.print_msg(f'********* {date.strftime("%d.%m.%Y %H:%M")} *********')
-            joy_stats.scrap_post(args.post_id)
-            time.sleep(args.delay * 60)
+        joy_stats.post_traking(args.post_id, args.delay)
 
 
 if __name__ == '__main__':

@@ -39,6 +39,7 @@ class JoyreactorStats:
         self.post_comments_template = re.compile("title='количество комментариев'>Комментарии (\d*)</a>")
         self.post_rating_template = re.compile('<span class="post_rating"><span>([\-\d\.]*)<')
 
+        self.post_check_date = list()
         self.post_id = list()
         self.post_title = list()
         self.post_text = list()
@@ -87,6 +88,14 @@ class JoyreactorStats:
 
         if self.open_xls:
             os.startfile(xls_file)
+
+    def post_tracking(self, post_id: int, delay: int) -> None:
+        self.print_msg('Для остановки нажмите Ctrl+С. Для сохранения отчёта нажмите S.')
+        while True:
+            date = datetime.now()
+            self.print_msg(f'********* {date.strftime("%d.%m.%Y %H:%M")} *********')
+            self.scrap_post(post_id)
+            sleep(delay * 60)
 
     def save_report(self, xls_file: str) -> None:
         """
@@ -204,6 +213,7 @@ class JoyreactorStats:
         """
 
         self.post_id.append(post_id)
+        self.post_check_date.append(datetime.now().strftime("%d.%m.%Y %H:%M"))
 
         post_url = f'https://joyreactor.cc/post/{post_id}'
 
