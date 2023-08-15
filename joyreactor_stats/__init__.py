@@ -49,6 +49,7 @@ class JoyreactorStats:
         self.post_url = list()
 
         self.header = ['id', 'Заголовок', 'Текстовое описание', 'Дата', 'Комментариев', 'Рейтинг', 'Ссылка']
+        self.tracking_header = ['Время', 'Рейтинг', 'Комментариев']
 
     def work(self) -> None:
         """
@@ -105,6 +106,8 @@ class JoyreactorStats:
         :return: None
         """
 
+        start_line = 1
+
         work_book = Workbook()
 
         work_sheet = work_book.active
@@ -123,29 +126,29 @@ class JoyreactorStats:
         header_font = Font(bold=True)
         header_align = Alignment(horizontal='center')
 
-        for row in work_sheet['A1:G1']:
+        for row in work_sheet[f'A{start_line}:G{start_line}']:
             for cell in row:
                 cell.font = header_font
                 cell.alignment = header_align
 
-        for row in work_sheet['F2:F' + str(last_row)]:
+        for row in work_sheet[f'F{start_line + 1}:F{last_row}']:
             for cell in row:
                 cell.number_format = "0.00"
 
-        for row in work_sheet['G2:G' + str(last_row)]:
+        for row in work_sheet[f'G{start_line + 1}:G{last_row}']:
             for cell in row:
                 cell.hyperlink = cell.value
                 cell.style = "Hyperlink"
 
         date_align = Alignment(horizontal='center')
-        for row in work_sheet['D2:D' + str(last_row)]:
+        for row in work_sheet[f'D{start_line + 1}:D{last_row}']:
             for cell in row:
                 cell.alignment = date_align
 
         border = Side(style='thin', color="000000")
         table_border = Border(top=border, left=border, right=border, bottom=border)
 
-        for row in work_sheet['A1:G' + str(last_row)]:
+        for row in work_sheet[f'A{start_line}:G{last_row}']:
             for cell in row:
                 cell.border = table_border
 
@@ -156,6 +159,50 @@ class JoyreactorStats:
         work_sheet.column_dimensions['E'].width = 15
         work_sheet.column_dimensions['F'].width = 9
         work_sheet.column_dimensions['G'].width = 35
+
+        work_book.save(xls_file)
+
+    def save_tracking_report(self, xls_file: str) -> None:
+        """
+        Save tracking report to xls
+        :param xls_file:
+        :type xls_file: str
+        :return: None
+        """
+
+        work_book = Workbook()
+
+        work_sheet = work_book.active
+
+        work_sheet.append(self.tracking_header)
+
+        self._insert_column_data(work_sheet, 'A', self.post_check_date)
+        self._insert_column_data(work_sheet, 'B', self.post_rating)
+        last_row = self._insert_column_data(work_sheet, 'C', self.post_comments)
+
+        # Оформление
+        header_font = Font(bold=True)
+        header_align = Alignment(horizontal='center')
+
+        for row in work_sheet['A1:C1']:
+            for cell in row:
+                cell.font = header_font
+                cell.alignment = header_align
+
+        for row in work_sheet['B2:B' + str(last_row)]:
+            for cell in row:
+                cell.number_format = "0.00"
+
+        border = Side(style='thin', color="000000")
+        table_border = Border(top=border, left=border, right=border, bottom=border)
+
+        for row in work_sheet['A1:C' + str(last_row)]:
+            for cell in row:
+                cell.border = table_border
+
+        work_sheet.column_dimensions['A'].width = 18
+        work_sheet.column_dimensions['B'].width = 9
+        work_sheet.column_dimensions['C'].width = 15
 
         work_book.save(xls_file)
 
