@@ -231,6 +231,9 @@ class JoyreactorStats:
 
         self.print_msg(f'Отчёт сохранён в файл {xls_file}')
 
+        if self.open_xls:
+            os.startfile(xls_file)
+
     def get_page_count(self) -> int:
         """
         Получить количество страниц с постами на аккаунте
