@@ -5,6 +5,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 from datetime import datetime, timedelta
 import os
+import keyboard
 
 
 class JoyreactorStats:
@@ -51,6 +52,8 @@ class JoyreactorStats:
         self.header = ['id', 'Заголовок', 'Текстовое описание', 'Дата', 'Комментариев', 'Рейтинг', 'Ссылка']
         self.tracking_header = ['Время', 'Рейтинг', 'Комментариев']
 
+        self.stop_tracking = False
+
     def work(self) -> None:
         """
         Run main work
@@ -91,12 +94,18 @@ class JoyreactorStats:
             os.startfile(xls_file)
 
     def post_tracking(self, post_id: int, delay: int) -> None:
-        self.print_msg('Для остановки нажмите Ctrl+С. Для сохранения отчёта нажмите S.')
-        while True:
+        self.print_msg('Для остановки нажмите Q.')
+        self.print_msg('Остановка будет выполнена при следующем шаге итерации. После этого будет сохранён отчёт.')
+        self.print_msg('Для экстренной остановки нажмите Ctrl+C. При этом отчёт не сохраняется.')
+        self.print_msg('Для сохранения отчёта нажмите S.')
+        keyboard.add_hotkey(hotkey='s', callback=self.save_tracking_report)
+        keyboard.add_hotkey(hotkey='q', callback=lambda: self.stop_tracking)
+        while not self.stop_tracking:
             date = datetime.now()
             self.print_msg(f'********* {date.strftime("%d.%m.%Y %H:%M")} *********')
             self.scrap_post(post_id)
             sleep(delay * 60)
+        self.save_tracking_report()
 
     def save_report(self, xls_file: str) -> None:
         """
@@ -162,7 +171,7 @@ class JoyreactorStats:
 
         work_book.save(xls_file)
 
-    def save_tracking_report(self, xls_file: str) -> None:
+    def save_tracking_report(self, xls_file: str = '') -> None:
         """
         Save tracking report to xls
         :param xls_file:
@@ -170,11 +179,21 @@ class JoyreactorStats:
         :return: None
         """
 
+        if xls_file == '':
+            save_date = datetime.now()
+            xls_file = f'joyreactor_{self.post_id[0]}_{save_date.strftime("%d.%m.%Y_%H-%M")}.xlsx'
+
         start_line = 3
 
         work_book = Workbook()
 
         work_sheet = work_book.active
+
+        work_sheet['A1'] = self.post_id[0]
+        work_sheet['B1'] = self.post_title[0]
+        work_sheet['C1'] = self.post_url[0]
+        work_sheet['C1'].hyperlink = work_sheet['C1'].value
+        work_sheet['C1'].style = "Hyperlink"
 
         work_sheet[f'A{start_line}'] = self.tracking_header[0]
         work_sheet[f'B{start_line}'] = self.tracking_header[1]
@@ -208,13 +227,9 @@ class JoyreactorStats:
         work_sheet.column_dimensions['B'].width = 9
         work_sheet.column_dimensions['C'].width = 15
 
-        work_sheet['A1'] = self.post_id[0]
-        work_sheet['B1'] = self.post_title[0]
-        work_sheet['C1'] = self.post_url[0]
-        work_sheet['C1'].hyperlink = work_sheet['C1'].value
-        work_sheet['C1'].style = "Hyperlink"
-
         work_book.save(xls_file)
+
+        self.print_msg(f'Отчёт сохранён в файл {xls_file}')
 
     def get_page_count(self) -> int:
         """
@@ -431,3 +446,11 @@ class JoyreactorStats:
     @open_xls.setter
     def open_xls(self, open_xls: bool):
         self.__open_xls = open_xls
+
+    @property
+    def stop_tracking(self) -> bool:
+        return self.__stop_tracking
+
+    @stop_tracking.setter
+    def stop_tracking(self, stop_tracking: bool = True):
+        self.__stop_tracking = stop_tracking

@@ -3,7 +3,7 @@ import argparse
 from joyreactor_stats import JoyreactorStats
 
 
-version = '1.1.0'
+version = '1.1.1'
 
 
 def parse_args():
@@ -92,7 +92,7 @@ def main():
     if args.post_id == 0:
         joy_stats.work()
     else:
-        joy_stats.post_traking(args.post_id, args.delay)
+        joy_stats.post_tracking(args.post_id, args.delay)
 
 
 if __name__ == '__main__':
