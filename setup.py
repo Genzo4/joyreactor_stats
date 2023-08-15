@@ -8,7 +8,7 @@ with open(path.join(top_level_directory, 'README.md'), encoding='utf-8') as file
 
 setup(
    name='joyreactor-stats',
-   version='1.1.0',
+   version='1.1.1',
    description='Получение статистики по публикациям аккаунта на joyreactor.cc',
    long_description=long_description,
    long_description_content_type='text/markdown',
@@ -37,6 +37,6 @@ setup(
    keywords=['joyreactor', 'joyreactor_stats'],
    license='MIT',
    packages=['joyreactor_stats'],
-   install_requires=['openpyxl'],
+   install_requires=['openpyxl', 'keyboard'],
    python_requires='>=3.8'
 )
