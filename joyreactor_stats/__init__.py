@@ -114,13 +114,13 @@ class JoyreactorStats:
 
         work_sheet.append(self.header)
 
-        self._insert_column_data(work_sheet, 'A', self.post_id)
-        self._insert_column_data(work_sheet, 'B', self.post_title)
-        self._insert_column_data(work_sheet, 'C', self.post_text)
-        self._insert_column_data(work_sheet, 'D', self.post_date)
-        self._insert_column_data(work_sheet, 'E', self.post_comments)
-        self._insert_column_data(work_sheet, 'F', self.post_rating)
-        last_row = self._insert_column_data(work_sheet, 'G', self.post_url)
+        self._insert_column_data(work_sheet, 'A', self.post_id, start_row=start_line + 1)
+        self._insert_column_data(work_sheet, 'B', self.post_title, start_row=start_line + 1)
+        self._insert_column_data(work_sheet, 'C', self.post_text, start_row=start_line + 1)
+        self._insert_column_data(work_sheet, 'D', self.post_date, start_row=start_line + 1)
+        self._insert_column_data(work_sheet, 'E', self.post_comments, start_row=start_line + 1)
+        self._insert_column_data(work_sheet, 'F', self.post_rating, start_row=start_line + 1)
+        last_row = self._insert_column_data(work_sheet, 'G', self.post_url, start_row=start_line + 1)
 
         # Оформление
         header_font = Font(bold=True)
@@ -170,39 +170,49 @@ class JoyreactorStats:
         :return: None
         """
 
+        start_line = 3
+
         work_book = Workbook()
 
         work_sheet = work_book.active
 
-        work_sheet.append(self.tracking_header)
+        work_sheet[f'A{start_line}'] = self.tracking_header[0]
+        work_sheet[f'B{start_line}'] = self.tracking_header[1]
+        work_sheet[f'C{start_line}'] = self.tracking_header[2]
 
-        self._insert_column_data(work_sheet, 'A', self.post_check_date)
-        self._insert_column_data(work_sheet, 'B', self.post_rating)
-        last_row = self._insert_column_data(work_sheet, 'C', self.post_comments)
+        self._insert_column_data(work_sheet, 'A', self.post_check_date, start_row=start_line + 1)
+        self._insert_column_data(work_sheet, 'B', self.post_rating, start_row=start_line + 1)
+        last_row = self._insert_column_data(work_sheet, 'C', self.post_comments, start_row=start_line + 1)
 
         # Оформление
         header_font = Font(bold=True)
         header_align = Alignment(horizontal='center')
 
-        for row in work_sheet['A1:C1']:
+        for row in work_sheet[f'A{start_line}:C{start_line}']:
             for cell in row:
                 cell.font = header_font
                 cell.alignment = header_align
 
-        for row in work_sheet['B2:B' + str(last_row)]:
+        for row in work_sheet[f'B{start_line + 1}:B{last_row}']:
             for cell in row:
                 cell.number_format = "0.00"
 
         border = Side(style='thin', color="000000")
         table_border = Border(top=border, left=border, right=border, bottom=border)
 
-        for row in work_sheet['A1:C' + str(last_row)]:
+        for row in work_sheet[f'A{start_line}:C{last_row}']:
             for cell in row:
                 cell.border = table_border
 
         work_sheet.column_dimensions['A'].width = 18
         work_sheet.column_dimensions['B'].width = 9
         work_sheet.column_dimensions['C'].width = 15
+
+        work_sheet['A1'] = self.post_id[0]
+        work_sheet['B1'] = self.post_title[0]
+        work_sheet['C1'] = self.post_url[0]
+        work_sheet['C1'].hyperlink = work_sheet['C1'].value
+        work_sheet['C1'].style = "Hyperlink"
 
         work_book.save(xls_file)
 
