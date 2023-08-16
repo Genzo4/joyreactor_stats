@@ -94,12 +94,12 @@ class JoyreactorStats:
             os.startfile(xls_file)
 
     def post_tracking(self, post_id: int, delay: int) -> None:
-        self.print_msg('Для остановки нажмите Q.')
+        self.print_msg('Для остановки нажмите Ctrl+Q.')
         self.print_msg('Остановка будет выполнена при следующем шаге итерации. После этого будет сохранён отчёт.')
         self.print_msg('Для экстренной остановки нажмите Ctrl+C. При этом отчёт не сохраняется.')
-        self.print_msg('Для сохранения отчёта нажмите S.')
-        keyboard.add_hotkey(hotkey='s', callback=self.save_tracking_report)
-        keyboard.add_hotkey(hotkey='q', callback=lambda: self.stop_tracking)
+        self.print_msg('Для сохранения отчёта нажмите Ctrl+S.')
+        keyboard.add_hotkey(hotkey='ctrl+s', callback=self.save_tracking_report)
+        keyboard.add_hotkey(hotkey='ctrl+q', callback=lambda: self.stop_tracking)
         while not self.stop_tracking:
             date = datetime.now()
             self.print_msg(f'********* {date.strftime("%d.%m.%Y %H:%M")} *********')

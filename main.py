@@ -3,7 +3,7 @@ import argparse
 from joyreactor_stats import JoyreactorStats
 
 
-version = '1.1.1'
+version = '1.1.2'
 
 
 def parse_args():
